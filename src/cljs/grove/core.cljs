@@ -18,6 +18,11 @@
                   :font-weight "bold"}}
    keyword])
 
+(defn placeholder-span [model hint]
+  [:span {:style {:color (color model :placeholder)
+                  :border (str "2px dashed " (color model :placeholder))}}
+   hint])
+
 ;;
 
 (defn init-model []
@@ -46,11 +51,7 @@
    ")"])
 
 (defn if-component [model params]
-  (into [:div
-         [:span {:style {:color (color model :keyword) :font-weight "bold"}} "if"] " "
-         [:span {:style {:color (color model :placeholder)
-                         :border (str "2px dashed " (color model :placeholder))}}
-          "condition"]]
+  (into [:div (keyword-span model "if") " " (placeholder-span model "condition")]
     (let [contents [:div {:style {:margin-left
                                   (case (-> model :settings :indent-width)
                                     :narrow "1em"
@@ -83,9 +84,8 @@
 
 (defn function-component [model function]
   [:div
-   [:span {:style {:color (color model :keyword)
-                   :font-weight "bold" :font-size "16px"}}
-    "function "]
+   (keyword-span model "function")
+   " "
    (if (= :name (:selected function))
      [:input {:style {:background-color (color model :background)
                       :border "none"
