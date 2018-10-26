@@ -13,6 +13,13 @@
   ((grove.settings/color-themes (-> model :settings :color-theme))
    color-name))
 
+(defn keyword-span [model keyword]
+  [:span {:style {:color (color model :keyword)
+                  :font-weight "bold"}}
+   keyword])
+
+;;
+
 (defn init-model []
   {:settings grove.settings/default-settings
    :body [:begin
@@ -39,12 +46,32 @@
    ")"])
 
 (defn if-component [model params]
-  [:div
-   [:span {:style {:color (color model :keyword) :font-weight "bold"}} "if"] " "
-   [:span {:style {:color (color model :placeholder) :border (str "2px dashed " (color model :placeholder))}} "condition"]
-   [:span " " "{"]
-   [:div]
-   [:span "}"]])
+  (into [:div
+         [:span {:style {:color (color model :keyword) :font-weight "bold"}} "if"] " "
+         [:span {:style {:color (color model :placeholder)
+                         :border (str "2px dashed " (color model :placeholder))}}
+          "condition"]]
+    (let [contents [:div {:style {:margin-left
+                                  (case (-> model :settings :indent-width)
+                                    :narrow "1em"
+                                    :medium "2em"
+                                    :wide "4em")}}
+                    "then-block"]]
+      (case (-> model :settings :block-markers)
+        :indent
+        contents
+        :braces
+        [" "
+         [:span "{"]
+         contents
+         [:span "}"]]
+        :begin-end
+        [" "
+         (keyword-span model "then")
+         [:br]
+         (keyword-span model "begin")
+         contents
+         (keyword-span model "end")]))))
 
 (defn body-component [model body]
   (match body

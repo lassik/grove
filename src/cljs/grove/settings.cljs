@@ -11,7 +11,7 @@
 
 (def default-settings
   {:color-theme "Exotica"
-   :indent-size :medium
+   :indent-width :medium
    :block-markers :braces})
 
 (def settings default-settings)
