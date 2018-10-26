@@ -43,7 +43,6 @@
        [:span "}"]]
       :begin-end
       [" "
-       (keyword-span model "then")
        [:br]
        (keyword-span model "begin")
        indented-body
@@ -57,7 +56,7 @@
           [[:function {:selected :name :name "increment" :body [:if {}]}]
            [:function {:name "update view"
                        :body [:begin
-                              [[:if {}]
+                              [[:if {:else true}]
                                [:call "print" [:int 1] [:int 2] [:int 3]]]]}]]]})
 
 (defn update-model [model operation]
@@ -77,8 +76,17 @@
    ")"])
 
 (defn if-component [model params]
-  (into [:div (keyword-span model "if") " " (placeholder-span model "condition")]
-    (body-stuff model (placeholder-span model "then this code"))))
+  (let [if-then
+        (into
+          [:div
+           (keyword-span model "if") " "
+           (placeholder-span model "condition")
+           " " g(keyword-span model "then")]
+          (body-stuff model (placeholder-span model "then this code")))]
+    (if-not (-> params :else)
+      if-then
+      (into (into if-then [" " (keyword-span model "else")])
+        (body-stuff model (placeholder-span model "else this code"))))))
 
 (defn body-component [model body]
   (match body
