@@ -1,20 +1,21 @@
 (ns grove.core
   (:require [reagent.core :as r]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [grove.settings]))
 
 (declare body-component)
 (declare function-component)
 (declare upd!)
 
-(def color-background "#091423")
-(def color-keyword "#66D9EF")
-(def color-funname "#84B5FF")
-(def color-placeholder "#C1CAFF")
-
 ;;
 
+(defn color [model color-name]
+  ((grove.settings/color-themes (-> model :settings :color-theme))
+   color-name))
+
 (defn init-model []
-  {:body [:begin
+  {:settings grove.settings/default-settings
+   :body [:begin
           [[:function {:selected :name :name "increment" :body [:if {}]}]
            [:function {:name "update view"
                        :body [:begin
@@ -27,40 +28,41 @@
     [:set-name name]
     (update-in model [:function :name] (constantly name))))
 
-(defn int-component [val]
+(defn int-component [model val]
   [:span val])
 
-(defn call-component [name args]
+(defn call-component [model name args]
   (println)
   [:div name
    "("
-   (into [:span] (interpose ", " (map body-component args)))
+   (into [:span] (interpose ", " (map #(body-component model %) args)))
    ")"])
 
-(defn if-component [params]
+(defn if-component [model params]
   [:div
-   [:span {:style {:color color-keyword :font-weight "bold"}} "if"] " "
-   [:span {:style {:color color-placeholder :border (str "2px dashed " color-placeholder)}} "condition"]
+   [:span {:style {:color (color model :keyword) :font-weight "bold"}} "if"] " "
+   [:span {:style {:color (color model :placeholder) :border (str "2px dashed " (color model :placeholder))}} "condition"]
    [:span " " "{"]
    [:div]
    [:span "}"]])
 
-(defn body-component [body]
+(defn body-component [model body]
   (match body
-    [:begin components] (into [:div] (map body-component components))
-    [:function params] (function-component params)
-    [:if params] (if-component params)
-    [:call name & args] (call-component name args)
-    [:int val] (int-component val)))
+    [:begin components] (into [:div] (map #(body-component model %) components))
+    [:function params] (function-component model params)
+    [:if params] (if-component model params)
+    [:call name & args] (call-component model name args)
+    [:int val] (int-component model val)))
 
-(defn function-component [function]
+(defn function-component [model function]
   [:div
-   [:span {:style {:color color-keyword :font-weight "bold" :font-size "16px"}}
+   [:span {:style {:color (color model :keyword)
+                   :font-weight "bold" :font-size "16px"}}
     "function "]
    (if (= :name (:selected function))
-     [:input {:style {:background-color color-background
+     [:input {:style {:background-color (color model :background)
                       :border "none"
-                      :color color-funname :font-size "16px"}
+                      :color (color model :funname) :font-size "16px"}
               :value (:name function)
               :on-change (fn [event]
                            (upd! :set-name (.. event -target -value)))
@@ -69,9 +71,9 @@
                               (if (= 13 (.-charCode event))
                                 (println "ENTER")
                                 (println "NOT ENTER")))}]
-     [:span {:style {:color color-funname}} (:name function)])
+     [:span {:style {:color (color model :funname)}} (:name function)])
    [:span " {"]
-   [:div {:style {:margin-left "2em"}} (body-component (:body function))]
+   [:div {:style {:margin-left "2em"}} (body-component model (:body function))]
    [:span "}"]])
 
 (defn view-model [model]
@@ -79,7 +81,7 @@
    [:span {:style {:color "gray"}} "Grove | "]
    [:span {} "example.c"]
    [:hr]
-   (body-component (:body model))])
+   (body-component model (:body model))])
 
 ;;
 
