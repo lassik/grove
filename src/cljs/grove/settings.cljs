@@ -7,6 +7,7 @@
    {:background "#091423"
     :keyword "#66d9ef"
     :funname "#84b5ff"
+    :string "#a6e22e"
     :placeholder "#c1caff"}})
 
 (def default-settings

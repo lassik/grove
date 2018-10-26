@@ -53,11 +53,13 @@
 (defn init-model []
   {:settings grove.settings/default-settings
    :body [:begin
-          [[:function {:selected :name :name "increment" :body [:if {}]}]
-           [:function {:name "update view"
-                       :body [:begin
-                              [[:if {:else [:call "print" [:int 1] [:int 2]]}]
-                               [:call "print" [:int 1] [:int 2] [:int 3]]]]}]]]})
+          [[:function
+            {:selected :name :name "increment" :body [:if {}]}]
+           [:function
+            {:name "update view"
+             :body [:begin
+                    [[:if {:else [:begin [[:call "print" [:str "Hello world"]]]]}]
+                     [:call "print" [:int 1] [:int 2] [:int 3]]]]}]]]})
 
 (defn update-model [model operation]
   (println "upd" operation)
@@ -67,6 +69,12 @@
 
 (defn int-component [model val]
   [:span val])
+
+(defn str-component [model val]
+  [:span {:style {:color (color model :string)
+                  :font-family "monospace"
+                  :border-bottom (str "1px dashed " (color model :string))}}
+   val])
 
 (defn call-component [model name args]
   (println)
@@ -84,11 +92,12 @@
            " " (keyword-span model "then")]
           (body-stuff model (placeholder-span model "then this code")))]
     (if (not (contains? params :else))
-      (into if-then ["+"])
+      (into if-then [(placeholder-span model "+")])
       (into (into if-then [" " (keyword-span model "else")])
         (body-stuff model
-          (or (-> params :else)
-            (placeholder-span model "else this code")))))))
+          (let [else-body (-> params :else)]
+            (or (body-component model else-body)
+              (placeholder-span model "else this code"))))))))
 
 (defn body-component [model body]
   (match body
@@ -96,7 +105,8 @@
     [:function params] (function-component model params)
     [:if params] (if-component model params)
     [:call name & args] (call-component model name args)
-    [:int val] (int-component model val)))
+    [:int val] (int-component model val)
+    [:str val] (str-component model val)))
 
 (defn function-component [model function]
   (into [:div
