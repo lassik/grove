@@ -1,0 +1,105 @@
+# Grove - visual code editor and macro system
+
+(An idea whose time has come -- since 1980)
+
+## Visual code editing
+
+Grove is visual source code editor. It is not a text editor.  Instead,
+a source file is parsed into a syntax tree which is shown for viewing
+and editing. Each tree node is its own object supporting direct
+manipulation with keyboard and mouse.
+
+A structural representation provides many major benefits over text. It
+can be customized with themes and augmented with tools such as live
+code evaluation and completion (and these tools will be vastly easier
+to make because they don't need to parse code). The editor can easily
+help the user by presenting the available language constructs at each
+point and explaining what they do. Identifier names can contain
+spaces.  Special characters don't need to be escaped, hence literal
+strings will be easier to read and write. Syntax errors cannot be
+made.  Tabs-vs-spaces and whitespace-vs-braces debates can be put to
+rest. Everyone can use the theme they personally prefer. For visually
+impaired people, it will be easier to craft interfaces tailored to
+their needs, since the interface will have an easier time analyzing
+the code and unlimited ways to present it.
+
+The main disadvantage of a structural representation is that it's not
+clear how to make it intuitive to work with incomplete ideas. We will
+have to tackle this problem experimentally, modifying the user
+interface until it is pleasant to use.
+
+## Interoperating with text files
+
+For compatibility, Grove saves source code in conventional text files
+using the traditional syntax of each programming language. Grove can
+only open syntactically correct files. When saving code, it formats
+the entire source file according to a particular style (e.g. for C
+code, it indents using a set number of spaces and aligns all the
+opening braces in a particular way). It does not preserve formatting
+in the original file that differs from this style. Therefore Grove is
+only practical for working on projects that use an automatic code
+formatter (such as clang-format) to strictly follow a coding
+style. Fortunately, that's getting to be more and more common.
+
+## Macro system
+
+Grove will provide a macro system that ties in seamlessly with the
+editor. Lisp macros are great, but cause growing pains when moving
+from textual to visual source code. To offer the same convenience and
+power as Grove's built-in facilities, Grove macros need to be fully
+themable and augmentable by the user. Lisp macros are not expanded
+until compile time, making it extremely difficult to reliably theme
+and augment them at edit time. To do that, precise and intimate
+knowledge is required about what part of the code calls a macro and
+what the arguments do. That in turn requires name resolution while
+keeping namespaces and lexical scoping in mind. Further, since Lisp is
+not a purely functional language, one effectively has to write a
+complete Lisp compiler to keep track of all the state and reliably
+work with macros. And that's only for Lisp macros. To support macros
+in any langauge, we would have to write a separate compiler for each
+of them, as well as syntax extensions for most languages which don't
+yet have macros.
+
+Clearly there has to be a better way. Functional programming has shown
+us that a program composed entirely of pure functions is easy to
+evaluate, partially or fully, in a safe sandbox with predictable
+results. Spreadsheet applications have shown us that pure functional
+programming, despite the intricate theory, can be made accessible to
+novices when it is presented visually in a live-manipulation
+environment. Total functional programming prevents even more mistakes
+by guaranteeing there are no infinite loops.
+
+The Grove macro system will treat the combined group of syntax trees
+of each source file in a project like one big spreadsheet. Any syntax
+tree node will either have a fixed value (i.e. traditional, static
+source code - almost all nodes will be like this) or compute its value
+as a pure function of other nodes. Each of these functions will be
+encapsulated in a macro. Each macro will be themable. For example, a
+macro that takes a number as an argument could switch between an edit
+box, a slider or a circular dial for inputting that number, according
+to which theme is chosen in the editor. The Grove macro-expander will
+compute the entire syntax forest by evaluating all syntax tree nodes,
+guarding against loops, to produce source files in the traditional
+syntax of the source languages. The result will be ready to feed to
+traditonal compilers and build systems. Grove macro definitions will
+be stored in a special file in the project's source directory, with
+placeholders in the source files themselves at the site of each macro
+call. The macro file can be committed to version control along with
+the project's source files.
+
+## Storing code in a database
+
+In the far future, Grove may be able to store all of a project's
+source code in a binary database and skip text files entirely. The
+database format makes sense if it becomes a de facto standard such as
+Git now is for version control. It makes less sense for Grove to have
+its own format that only other Grove users can use. Code in a database
+is a low priority, as we have plenty of more pressing concerns on our
+plate.
+
+## Name
+
+*Grove* means a group of trees. A traditional source file is a static
+encoding of a syntax tree. Hence a group of source files encodes a
+group of trees. Grove aims to bring these trees into focus and blur
+the syntactic noise in the background.
