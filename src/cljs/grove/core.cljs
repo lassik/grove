@@ -56,7 +56,7 @@
           [[:function {:selected :name :name "increment" :body [:if {}]}]
            [:function {:name "update view"
                        :body [:begin
-                              [[:if {:else true}]
+                              [[:if {:else [:call "print" [:int 1] [:int 2]]}]
                                [:call "print" [:int 1] [:int 2] [:int 3]]]]}]]]})
 
 (defn update-model [model operation]
@@ -81,12 +81,14 @@
           [:div
            (keyword-span model "if") " "
            (placeholder-span model "condition")
-           " " g(keyword-span model "then")]
+           " " (keyword-span model "then")]
           (body-stuff model (placeholder-span model "then this code")))]
-    (if-not (-> params :else)
-      if-then
+    (if (not (contains? params :else))
+      (into if-then ["+"])
       (into (into if-then [" " (keyword-span model "else")])
-        (body-stuff model (placeholder-span model "else this code"))))))
+        (body-stuff model
+          (or (-> params :else)
+            (placeholder-span model "else this code")))))))
 
 (defn body-component [model body]
   (match body
