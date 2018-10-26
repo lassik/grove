@@ -1,6 +1,4 @@
-(ns grove.settings
-  (:require [reagent.core :as r]
-            [clojure.core.match :refer [match]]))
+(ns grove.settings)
 
 (def color-themes
   {"Exotica"
