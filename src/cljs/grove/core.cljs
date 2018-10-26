@@ -13,6 +13,12 @@
   ((grove.settings/color-themes (-> model :settings :color-theme))
    color-name))
 
+(defn indent-em [model]
+  (case (-> model :settings :indent-width)
+    :narrow "1em"
+    :medium "2em"
+    :wide "4em"))
+
 (defn keyword-span [model keyword]
   [:span {:style {:color (color model :keyword)
                   :font-weight "bold"}}
@@ -22,6 +28,26 @@
   [:span {:style {:color (color model :placeholder)
                   :border (str "2px dashed " (color model :placeholder))}}
    hint])
+
+(defn body-stuff [model body]
+  (let [indented-body
+        [:div {:style {:margin-left (indent-em model)}}
+         body]]
+    (case (-> model :settings :block-markers)
+      :indent
+      [indented-body]
+      :braces
+      [" "
+       [:span "{"]
+       indented-body
+       [:span "}"]]
+      :begin-end
+      [" "
+       (keyword-span model "then")
+       [:br]
+       (keyword-span model "begin")
+       indented-body
+       (keyword-span model "end")])))
 
 ;;
 
@@ -52,27 +78,7 @@
 
 (defn if-component [model params]
   (into [:div (keyword-span model "if") " " (placeholder-span model "condition")]
-    (let [contents [:div {:style {:margin-left
-                                  (case (-> model :settings :indent-width)
-                                    :narrow "1em"
-                                    :medium "2em"
-                                    :wide "4em")}}
-                    "then-block"]]
-      (case (-> model :settings :block-markers)
-        :indent
-        contents
-        :braces
-        [" "
-         [:span "{"]
-         contents
-         [:span "}"]]
-        :begin-end
-        [" "
-         (keyword-span model "then")
-         [:br]
-         (keyword-span model "begin")
-         contents
-         (keyword-span model "end")]))))
+    (body-stuff model (placeholder-span model "then this code"))))
 
 (defn body-component [model body]
   (match body
@@ -83,25 +89,23 @@
     [:int val] (int-component model val)))
 
 (defn function-component [model function]
-  [:div
-   (keyword-span model "function")
-   " "
-   (if (= :name (:selected function))
-     [:input {:style {:background-color (color model :background)
-                      :border "none"
-                      :color (color model :funname) :font-size "16px"}
-              :value (:name function)
-              :on-change (fn [event]
-                           (upd! :set-name (.. event -target -value)))
-              :on-key-press (fn [event]
-                              (println "key press" (.-charCode event))
-                              (if (= 13 (.-charCode event))
-                                (println "ENTER")
-                                (println "NOT ENTER")))}]
-     [:span {:style {:color (color model :funname)}} (:name function)])
-   [:span " {"]
-   [:div {:style {:margin-left "2em"}} (body-component model (:body function))]
-   [:span "}"]])
+  (into [:div
+         (keyword-span model "function")
+         " "
+         (if (= :name (:selected function))
+           [:input {:style {:background-color (color model :background)
+                            :border "none"
+                            :color (color model :funname) :font-size "16px"}
+                    :value (:name function)
+                    :on-change (fn [event]
+                                 (upd! :set-name (.. event -target -value)))
+                    :on-key-press (fn [event]
+                                    (println "key press" (.-charCode event))
+                                    (if (= 13 (.-charCode event))
+                                      (println "ENTER")
+                                      (println "NOT ENTER")))}]
+           [:span {:style {:color (color model :funname)}} (:name function)])]
+    (body-stuff model (body-component model (:body function)))))
 
 (defn view-model [model]
   [:div
