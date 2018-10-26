@@ -115,12 +115,52 @@
            [:span {:style {:color (color model :funname)}} (:name function)])]
     (body-stuff model (body-component model (:body function)))))
 
+;;
+
+(defn settings-component [model]
+  [:div
+   [:h2 "Settings"]
+   [:table
+    [:tr
+     [:th "Color theme"]
+     [:td (into [:select]
+            (map (fn [name] [:option name])
+              (keys grove.settings/color-themes)))]]
+    [:tr
+     [:th "Indent width"]
+     [:td [:select
+           [:option "Narrow"]
+           [:option "Medium"]
+           [:option "Wide"]]]]
+    [:tr
+     [:th "Block markers"]
+     [:td [:select
+           [:option "Indent only"]
+           [:option "Braces {...}"]
+           [:option "Begin ... End"]
+           [:option "If ... End If"]]]]
+    [:tr
+     [:th "Keywords"]
+     [:td [:select
+           [:option "Lowercase"]
+           [:option "Capitalized"]
+           [:option "Uppercase"]]]]
+    [:tr
+     [:th "Function call"]
+     [:td [:select
+           [:option "Math-like"]
+           [:option "Lisp-like"]]]]]])
+
+;;
+
 (defn view-model [model]
   [:div
    [:span {:style {:color "gray"}} "Grove | "]
    [:span {} "example.c"]
    [:hr]
-   (body-component model (:body model))])
+   (body-component model (:body model))
+   [:hr]
+   (settings-component model)])
 
 ;;
 
